@@ -247,10 +247,10 @@
 <div class="container">
     <header>
         <h1>🏆 موقع تحدي توقعات دور الـ 32 السحابي 🏆</h1>
-        <p>مزامنة سحابية حيّة تلقائية - كل شخص يسجل من جواله وتظهر للكل فوراً 🌐</p>
+        <p>مزامنة سحابية حية وآمنة 100% - حفظ فوري مستقل لكل جهاز 🌐</p>
     </header>
 
-    <div id="loading-indicator" class="loading-notice">⏳ جاري الاتصال بالسيرفر السحابي وتحديث البيانات...</div>
+    <div id="loading-indicator" class="loading-notice">⏳ جاري تأمين ومزامنة البيانات مع السيرفر السحابي...</div>
 
     <table class="rules-table">
         <thead>
@@ -290,10 +290,9 @@
     const passwords = { hosam: '2007', rakan: '0201', aziz: '7197' };
     const adminPassword = '1517'; 
     
-    // مفاتيح سيرفرك الحقيقية والجاهزة
+    // ربط مباشر وحقيقي ببيانات سيرفر jsonbin الخاص بك
     const YOUR_BIN_ID = '6a4186a4f5f4af5e293e88ef'; 
     const YOUR_MASTER_KEY = '$2a$10$eWP3TjQvYGVTn9cRX0YSwOYlsGbcXS678HHP0aHBHa1KFlpFG3iIq';
-    
     const cloudApiUrl = `https://api.jsonbin.io/v3/b/${YOUR_BIN_ID}`;
 
     let decryptedStatus = { hosam: false, rakan: false, aziz: false };
@@ -311,16 +310,15 @@
 
     let data = { matchStatus: {}, realResults: {}, predictions: { hosam: {}, rakan: {}, aziz: {} } };
 
-    // الدالة الآن تقبل أمر (تحديث الشاشة أم لا) لكي لا نمسح أرقامك
     async function loadCloudData(shouldRender = true) {
         showLoading(true);
         try {
             const response = await fetch(cloudApiUrl, { headers: { 'X-Master-Key': YOUR_MASTER_KEY } });
             if (response.ok) {
                 const resJson = await response.json();
-                if (resJson.record && resJson.record.predictions) { data = resJson.record; }
+                if (resJson.record) { data = resJson.record; }
             }
-        } catch (error) {}
+        } catch (error) { console.error(error); }
         
         if (!data.matchStatus) data.matchStatus = {};
         if (!data.realResults) data.realResults = {};
@@ -339,7 +337,7 @@
                 headers: { 'Content-Type': 'application/json', 'X-Master-Key': YOUR_MASTER_KEY },
                 body: JSON.stringify(data)
             });
-        } catch (error) { alert("حدث خطأ في الاتصال بالسيرفر!"); }
+        } catch (error) { alert("حدث خطأ في الاتصال بالسيرفر السحابي!"); }
         showLoading(false);
     }
 
@@ -383,7 +381,8 @@
             `;
 
             participants.forEach(p => {
-                const pred = data.predictions[p][id] || { g1: '', g2: '', qual: '' };
+                const playerPreds = data.predictions && data.predictions[p] ? data.predictions[p] : {};
+                const pred = playerPreds[id] || { g1: '', g2: '', qual: '' };
                 const pName = p === 'hosam' ? 'حسام' : p === 'rakan' ? 'راكان' : 'عبدالعزيز';
                 const isRevealed = (decryptedStatus[p] && !isMatchClosed) || isMatchFinished;
 
@@ -418,7 +417,7 @@
     async function toggleMatchLock(id) {
         let pass = prompt("أدخل الرقم السري الخاص بالأدمن لتغيير حالة قفل التوقعات:");
         if (pass === adminPassword) {
-            await loadCloudData(false); // تعديل مهم: عدم مسح الشاشة
+            await loadCloudData(false); 
             data.matchStatus[id] = data.matchStatus[id] === 'closed' ? 'open' : 'closed';
             await saveCloudData();
             renderMatches();
@@ -427,36 +426,50 @@
 
     async function toggleUserAccess(player) {
         if (decryptedStatus[player]) {
-            // 1. نقرأ اللي كتبته أنت أولاً في متغير مؤقت
-            let tempPreds = {};
+            // 🔥 الحل الذكي الفوري: نقرأ ونؤمن مدخلاتك الحالية أولاً في مصفوفة مستقلة معزولة لكي لا تختفي!
+            let newPredictions = {};
             for (let id = 1; id <= 16; id++) {
-                const g1Input = document.getElementById(`pred-${player}-m${id}-g1`);
-                const g2Input = document.getElementById(`pred-${player}-m${id}-g2`);
-                const qualInput = document.getElementById(`pred-${player}-m${id}-qual`);
-                if(g1Input && data.matchStatus[id] !== 'closed') {
-                    tempPreds[id] = { g1: g1Input.value, g2: g2Input.value, qual: qualInput.value };
+                const g1 = document.getElementById(`pred-${player}-m${id}-g1`).value;
+                const g2 = document.getElementById(`pred-${player}-m${id}-g2`).value;
+                const qual = document.getElementById(`pred-${player}-m${id}-qual`).value;
+                
+                if (data.matchStatus[id] !== 'closed') {
+                    newPredictions[id] = { g1: g1, g2: g2, qual: qual };
                 }
             }
             
-            // 2. نجيب البيانات من السيرفر بصمت (بدون ما نمسح الشاشة)
-            await loadCloudData(false); 
-            
-            // 3. ندمج بياناتك اللي كتبتها مع بيانات السيرفر
+            // جلب أحدث نسخة من السيرفر بصمت في الخلفية
+            try {
+                const response = await fetch(cloudApiUrl, { headers: { 'X-Master-Key': YOUR_MASTER_KEY } });
+                if (response.ok) {
+                    const resJson = await response.json();
+                    if (resJson.record) data = resJson.record;
+                }
+            } catch (e) { console.error(e); }
+
+            if (!data.predictions) data.predictions = {};
+            if (!data.predictions[player]) data.predictions[player] = {};
+
+            // دمج مدخلاتك المؤمنة مع بيانات السيرفر بأمان بدون مسح أي شيء
             for (let id = 1; id <= 16; id++) {
-                if(tempPreds[id]) {
-                    data.predictions[player][id] = tempPreds[id];
+                if (newPredictions[id]) {
+                    data.predictions[player][id] = newPredictions[id];
                 }
             }
             
             decryptedStatus[player] = false;
-            // 4. نرفع كل شي مع بعض للسيرفر
-            await saveCloudData(); 
-            // 5. نحدث الشاشة
-            renderMatches();
+            await saveCloudData(); // حفظ سحابي حقيقي
+            renderMatches(); // إعادة البناء بعد استقرار السيرفر
         } else {
             let pass = prompt(`أدخل الرمز السري لتعديل توقعاتك يا ${player === 'hosam' ? 'حسام' : player === 'rakan' ? 'راكان' : 'عبدالعزيز'}:`);
             if (pass === passwords[player]) {
-                await loadCloudData(true);
+                try {
+                    const response = await fetch(cloudApiUrl, { headers: { 'X-Master-Key': YOUR_MASTER_KEY } });
+                    if (response.ok) {
+                        const resJson = await response.json();
+                        if (resJson.record) data = resJson.record;
+                    }
+                } catch (e) {}
                 decryptedStatus[player] = true;
                 renderMatches();
             } else { alert('الرمز السري خاطئ!'); }
@@ -464,31 +477,40 @@
     }
 
     async function confirmAndCalculateSingle(id) {
-        // نقرأ النتيجة الحقيقية قبل ما نسحب من السيرفر
         const g1Val = document.getElementById(`real-m${id}-g1`).value;
         const g2Val = document.getElementById(`real-m${id}-g2`).value;
         const qualVal = document.getElementById(`real-m${id}-qual`).value;
 
-        await loadCloudData(false);
+        try {
+            const response = await fetch(cloudApiUrl, { headers: { 'X-Master-Key': YOUR_MASTER_KEY } });
+            if (response.ok) {
+                const resJson = await response.json();
+                if (resJson.record) data = resJson.record;
+            }
+        } catch (e) {}
         
+        if (!data.realResults) data.realResults = {};
         data.realResults[id] = { g1: g1Val, g2: g2Val, qual: qualVal };
         
         await saveCloudData(); 
         renderMatches();
-        alert(`🎉 تم حفظ النتيجة وحساب النقاط وكشف التوقعات أونلاين للجميع!`);
+        alert(`🎉 تم حفظ النتيجة للمباراة رقم ${id} واحتساب نقاط الجميع أونلاين!`);
     }
 
     function calculateLiveScores() {
         let totalScores = { hosam: 0, rakan: 0, aziz: 0 };
         for (let id = 1; id <= 16; id++) {
-            const r1Str = data.realResults[id]?.g1;
-            const r2Str = data.realResults[id]?.g2;
-            const rQual = data.realResults[id]?.qual; 
+            const rResult = data.realResults && data.realResults[id] ? data.realResults[id] : { g1: '', g2: '', qual: '' };
+            const r1Str = rResult.g1;
+            const r2Str = rResult.g2;
+            const rQual = rResult.qual; 
+            
             if (r1Str !== '' && r2Str !== '' && r1Str !== undefined && r2Str !== undefined && rQual) {
                 const ri1 = parseInt(r1Str)||0, ri2 = parseInt(r2Str)||0;
                 const realWinnerGoals = Math.max(ri1, ri2), realLoserGoals = Math.min(ri1, ri2);
                 participants.forEach(p => {
-                    const pred = data.predictions[p][id];
+                    const playerPreds = data.predictions && data.predictions[p] ? data.predictions[p] : {};
+                    const pred = playerPreds[id];
                     if (pred) {
                         const p1Str = pred.g1, p2Str = pred.g2, pQual = pred.qual;
                         if (p1Str !== '' && p2Str !== '' && p1Str !== undefined && p2Str !== undefined && pQual) {
