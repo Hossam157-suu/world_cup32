@@ -265,12 +265,16 @@
                 <td style="text-align: center;"><span class="points-badge-rule">+ 3 نقاط</span></td>
             </tr>
             <tr>
-                <td>توقع عدد الأهداف الصحيح للمنتخب (المتأهل)</td>
-                <td style="text-align: center;"><span class="points-badge-rule">+ نقطتين</span></td>
+                <td>توقع عدد الأهداف الصحيح للمنتخب (الفائز)</td>
+                <td style="text-align: center;"><span class="points-badge-rule">+ 1 نقطة</span></td>
             </tr>
             <tr>
                 <td>توقع عدد الأهداف الصحيح للمنتخب (الخاسر)</td>
-                <td style="text-align: center;"><span class="points-badge-rule">+ نقطتين</span></td>
+                <td style="text-align: center;"><span class="points-badge-rule">+ 1 نقطة</span></td>
+            </tr>
+            <tr>
+                <td>توقع فارق الأهداف (فارق الفوز)</td>
+                <td style="text-align: center;"><span class="points-badge-rule">+ 1 نقطة</span></td>
             </tr>
         </tbody>
     </table>
@@ -426,7 +430,6 @@
 
     async function toggleUserAccess(player) {
         if (decryptedStatus[player]) {
-            // 🔥 الحل الذكي الفوري: نقرأ ونؤمن مدخلاتك الحالية أولاً في مصفوفة مستقلة معزولة لكي لا تختفي!
             let newPredictions = {};
             for (let id = 1; id <= 16; id++) {
                 const g1 = document.getElementById(`pred-${player}-m${id}-g1`).value;
@@ -438,7 +441,6 @@
                 }
             }
             
-            // جلب أحدث نسخة من السيرفر بصمت في الخلفية
             try {
                 const response = await fetch(cloudApiUrl, { headers: { 'X-Master-Key': YOUR_MASTER_KEY } });
                 if (response.ok) {
@@ -450,7 +452,6 @@
             if (!data.predictions) data.predictions = {};
             if (!data.predictions[player]) data.predictions[player] = {};
 
-            // دمج مدخلاتك المؤمنة مع بيانات السيرفر بأمان بدون مسح أي شيء
             for (let id = 1; id <= 16; id++) {
                 if (newPredictions[id]) {
                     data.predictions[player][id] = newPredictions[id];
@@ -458,8 +459,8 @@
             }
             
             decryptedStatus[player] = false;
-            await saveCloudData(); // حفظ سحابي حقيقي
-            renderMatches(); // إعادة البناء بعد استقرار السيرفر
+            await saveCloudData(); 
+            renderMatches(); 
         } else {
             let pass = prompt(`أدخل الرمز السري لتعديل توقعاتك يا ${player === 'hosam' ? 'حسام' : player === 'rakan' ? 'راكان' : 'عبدالعزيز'}:`);
             if (pass === passwords[player]) {
@@ -508,6 +509,10 @@
             if (r1Str !== '' && r2Str !== '' && r1Str !== undefined && r2Str !== undefined && rQual) {
                 const ri1 = parseInt(r1Str)||0, ri2 = parseInt(r2Str)||0;
                 const realWinnerGoals = Math.max(ri1, ri2), realLoserGoals = Math.min(ri1, ri2);
+                
+                // حساب الفارق الحقيقي بين الفريقين
+                const realDiff = ri1 - ri2; 
+
                 participants.forEach(p => {
                     const playerPreds = data.predictions && data.predictions[p] ? data.predictions[p] : {};
                     const pred = playerPreds[id];
@@ -516,9 +521,20 @@
                         if (p1Str !== '' && p2Str !== '' && p1Str !== undefined && p2Str !== undefined && pQual) {
                             const pi1 = parseInt(p1Str)||0, pi2 = parseInt(p2Str)||0;
                             let pts = 0;
+                            
+                            // 1. توقع المتأهل (+3)
                             if (pQual === rQual) pts += 3;
-                            if (Math.max(pi1, pi2) === realWinnerGoals) pts += 2;
-                            if (Math.min(pi1, pi2) === realLoserGoals) pts += 2;
+                            
+                            // 2. توقع أهداف الفائز (+1)
+                            if (Math.max(pi1, pi2) === realWinnerGoals) pts += 1;
+                            
+                            // 3. توقع أهداف الخاسر (+1)
+                            if (Math.min(pi1, pi2) === realLoserGoals) pts += 1;
+                            
+                            // 4. فارق الفوز (+1) - إذا تطابق ناتج طرح أهداف الفريقين
+                            const predDiff = pi1 - pi2;
+                            if (predDiff === realDiff) pts += 1;
+
                             totalScores[p] += pts;
                             if(document.getElementById(`pts-${p}-m${id}`)) { document.getElementById(`pts-${p}-m${id}`).innerText = pts + " ن"; }
                         }
