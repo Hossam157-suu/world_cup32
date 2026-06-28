@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تحدي توقعات كأس العالم - دور الـ 32 السحابي</title>
+    <title>تحدي توقعات كأس العالم - النسخة السحابية المضمونة</title>
     <style>
         :root {
             --primary: #1A365D;
@@ -247,10 +247,10 @@
 <div class="container">
     <header>
         <h1>🏆 موقع تحدي توقعات دور الـ 32 السحابي 🏆</h1>
-        <p>مزامنة سحابية حقيقية ومضمونة تعمل على كافة الأجهزة في نفس اللحظة 🌐</p>
+        <p>مزامنة سحابية حيّة تلقائية - كل شخص يسجل من جواله وتظهر للكل فوراً 🌐</p>
     </header>
 
-    <div id="loading-indicator" class="loading-notice">⏳ جاري مزامنة وحفظ البيانات السحابية الحية...</div>
+    <div id="loading-indicator" class="loading-notice">⏳ جاري الاتصال بالسيرفر السحابي وتحديث البيانات...</div>
 
     <table class="rules-table">
         <thead>
@@ -276,21 +276,9 @@
     </table>
 
     <div class="leaderboard">
-        <div class="card" id="card-hosam">
-            <div class="crown">👑</div>
-            <h3>حسام</h3>
-            <div class="points" id="score-hosam">0</div>
-        </div>
-        <div class="card" id="card-rakan">
-            <div class="crown">👑</div>
-            <h3>راكان</h3>
-            <div class="points" id="score-rakan">0</div>
-        </div>
-        <div class="card" id="card-aziz">
-            <div class="crown">👑</div>
-            <h3>عبدالعزيز</h3>
-            <div class="points" id="score-aziz">0</div>
-        </div>
+        <div class="card" id="card-hosam"><div class="crown">👑</div><h3>حسام</h3><div class="points" id="score-hosam">0</div></div>
+        <div class="card" id="card-rakan"><div class="crown">👑</div><h3>راكان</h3><div class="points" id="score-rakan">0</div></div>
+        <div class="card" id="card-aziz"><div class="crown">👑</div><h3>عبدالعزيز</h3><div class="points" id="score-aziz">0</div></div>
     </div>
 
     <h2>⚽ مباريات دور الـ 32 والنتائج والتوقعات السرية أونلاين</h2>
@@ -302,48 +290,36 @@
     const passwords = { hosam: '2007', rakan: '0201', aziz: '7197' };
     const adminPassword = '1517'; 
     
-    const cloudApiUrl = 'https://wcup2026-b8dbf-default-rtdb.firebaseio.com/challenge_data.json';
+    // المفاتيح الحقيقية لجروب حسام 
+    const YOUR_BIN_ID = '6a4186a4f5f4af5e293e88ef'; 
+    const YOUR_MASTER_KEY = '$2a$10$eWP3TjQvYGVTn9cRX0YSwOYlsGbcXS678HHP0aHBHa1KFlpFG3iIq';
+    
+    const cloudApiUrl = `https://api.jsonbin.io/v3/b/${YOUR_BIN_ID}`;
 
     let decryptedStatus = { hosam: false, rakan: false, aziz: false };
 
     const staticTeams = {
-        1: { t1: "جنوب أفريقيا", t2: "كندا" },
-        2: { t1: "البرازيل", t2: "اليابان" },
-        3: { t1: "ألمانيا", t2: "باراغواي" },
-        4: { t1: "هولندا", t2: "المغرب" },
-        5: { t1: "ساحل العاج", t2: "النرويج" },
-        6: { t1: "فرنسا", t2: "السويد" },
-        7: { t1: "المكسيك", t2: "الأوروغواي" },
-        8: { t1: "إنجلترا", t2: "الكونغو الديمقراطية" },
-        9: { t1: "بلجيكا", t2: "السنغال" },
-        10: { t1: "أمريكا", t2: "البوسنة والهرسك" },
-        11: { t1: "إسبانيا", t2: "النمسا" },
-        12: { t1: "البرتغال", t2: "كرواتيا" },
-        13: { t1: "سويسرا", t2: "الجزائر" },
-        14: { t1: "أستراليا", t2: "مصر" },
-        15: { t1: "الأرجنتين", t2: "الرأس الأخضر" },
-        16: { t1: "كولومبيا", t2: "غانا" }
+        1: { t1: "جنوب أفريقيا", t2: "كندا" }, 2: { t1: "البرازيل", t2: "اليابان" },
+        3: { t1: "ألمانيا", t2: "باراغواي" }, 4: { t1: "هولندا", t2: "المغرب" },
+        5: { t1: "ساحل العاج", t2: "النرويج" }, 6: { t1: "فرنسا", t2: "السويد" },
+        7: { t1: "المكسيك", t2: "الأوروغواي" }, 8: { t1: "إنجلترا", t2: "الكونغو الديمقراطية" },
+        9: { t1: "بلجيكا", t2: "السنغال" }, 10: { t1: "أمريكا", t2: "البوسنة والهرسك" },
+        11: { t1: "إسبانيا", t2: "النمسا" }, 12: { t1: "البرتغال", t2: "كرواتيا" },
+        13: { t1: "سويسرا", t2: "الجزائر" }, 14: { t1: "أستراليا", t2: "مصر" },
+        15: { t1: "الأرجنتين", t2: "الرأس الأخضر" }, 16: { t1: "كولومبيا", t2: "غانا" }
     };
 
-    let data = {
-        matchStatus: {}, 
-        realResults: {},
-        predictions: { hosam: {}, rakan: {}, aziz: {} }
-    };
+    let data = { matchStatus: {}, realResults: {}, predictions: { hosam: {}, rakan: {}, aziz: {} } };
 
     async function loadCloudData() {
         showLoading(true);
         try {
-            const response = await fetch(cloudApiUrl);
+            const response = await fetch(cloudApiUrl, { headers: { 'X-Master-Key': YOUR_MASTER_KEY } });
             if (response.ok) {
-                const cloudData = await response.json();
-                if (cloudData && cloudData.predictions) {
-                    data = cloudData;
-                }
+                const resJson = await response.json();
+                if (resJson.record && resJson.record.predictions) { data = resJson.record; }
             }
-        } catch (error) {
-            console.log("خطأ في جلب البيانات السحابية.");
-        }
+        } catch (error) {}
         
         if (!data.matchStatus) data.matchStatus = {};
         if (!data.realResults) data.realResults = {};
@@ -359,19 +335,14 @@
         try {
             await fetch(cloudApiUrl, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'X-Master-Key': YOUR_MASTER_KEY },
                 body: JSON.stringify(data)
             });
-        } catch (error) {
-            alert("خطأ في الاتصال بالسيرفر!");
-        }
+        } catch (error) { alert("حدث خطأ في الاتصال بالسيرفر!"); }
         showLoading(false);
     }
 
-    function showLoading(status) {
-        const indicator = document.getElementById('loading-indicator');
-        if (indicator) indicator.style.display = status ? 'block' : 'none';
-    }
+    function showLoading(status) { document.getElementById('loading-indicator').style.display = status ? 'block' : 'none'; }
 
     function renderMatches() {
         const container = document.getElementById('matches-container');
@@ -407,7 +378,6 @@
                             </select>
                             <button class="btn-confirm-result" onclick="confirmAndCalculateSingle(${id})">✔️ تأكيد النتيجة والاحتساب فورا</button>
                         </div>
-                        
                         <div class="predictions-section">
             `;
 
@@ -438,7 +408,6 @@
                     </div>
                 `;
             });
-
             matchHTML += `</div></div></div>`;
             container.innerHTML += matchHTML;
         }
@@ -448,100 +417,74 @@
     async function toggleMatchLock(id) {
         let pass = prompt("أدخل الرقم السري الخاص بالأدمن لتغيير حالة قفل التوقعات:");
         if (pass === adminPassword) {
+            await loadCloudData(); 
             data.matchStatus[id] = data.matchStatus[id] === 'closed' ? 'open' : 'closed';
-            renderMatches();
             await saveCloudData();
-        } else {
-            alert("الرمز السري للأدمن خطأ!");
-        }
+            renderMatches();
+        } else { alert("الرمز السري للأدمن خطأ!"); }
     }
 
     async function toggleUserAccess(player) {
         if (decryptedStatus[player]) {
-            // تجميع وقراءة المدخلات بشكل صحيح ومثالي الآن دون أخطاء
+            await loadCloudData(); 
             for (let id = 1; id <= 16; id++) {
                 const g1Input = document.getElementById(`pred-${player}-m${id}-g1`);
                 const g2Input = document.getElementById(`pred-${player}-m${id}-g2`);
                 const qualInput = document.getElementById(`pred-${player}-m${id}-qual`);
-                
                 if(g1Input && data.matchStatus[id] !== 'closed') {
-                    data.predictions[player][id] = {
-                        g1: g1Input.value,
-                        g2: g2Input.value,
-                        qual: qualInput.value
-                    };
+                    data.predictions[player][id] = { g1: g1Input.value, g2: g2Input.value, qual: qualInput.value };
                 }
             }
             decryptedStatus[player] = false;
+            await saveCloudData(); 
             renderMatches();
-            await saveCloudData(); // دفع البيانات المصححة للسيرفر الآن!
         } else {
             let pass = prompt(`أدخل الرمز السري لتعديل توقعاتك يا ${player === 'hosam' ? 'حسام' : player === 'rakan' ? 'راكان' : 'عبدالعزيز'}:`);
             if (pass === passwords[player]) {
                 decryptedStatus[player] = true;
                 renderMatches();
-            } else {
-                alert('الرمز السري خاطئ!');
-            }
+            } else { alert('الرمز السري خاطئ!'); }
         }
     }
 
     async function confirmAndCalculateSingle(id) {
+        await loadCloudData();
         data.realResults[id] = {
             g1: document.getElementById(`real-m${id}-g1`).value,
             g2: document.getElementById(`real-m${id}-g2`).value,
             qual: document.getElementById(`real-m${id}-qual`).value
         };
-        renderMatches();
         await saveCloudData(); 
-        alert(`🎉 تم الاعتماد الفوري وحفظ النتيجة وحساب النقاط تلقائياً!`);
+        renderMatches();
+        alert(`🎉 تم حفظ النتيجة وحساب النقاط وكشف التوقعات أونلاين للجميع!`);
     }
 
     function calculateLiveScores() {
         let totalScores = { hosam: 0, rakan: 0, aziz: 0 };
-
         for (let id = 1; id <= 16; id++) {
             const r1Str = data.realResults[id]?.g1;
             const r2Str = data.realResults[id]?.g2;
             const rQual = data.realResults[id]?.qual; 
-
             if (r1Str !== '' && r2Str !== '' && r1Str !== undefined && r2Str !== undefined && rQual) {
-                const ri1 = parseInt(r1Str)||0;
-                const ri2 = parseInt(r2Str)||0;
-                
-                const realWinnerGoals = Math.max(ri1, ri2);
-                const realLoserGoals = Math.min(ri1, ri2);
-
+                const ri1 = parseInt(r1Str)||0, ri2 = parseInt(r2Str)||0;
+                const realWinnerGoals = Math.max(ri1, ri2), realLoserGoals = Math.min(ri1, ri2);
                 participants.forEach(p => {
                     const pred = data.predictions[p][id];
                     if (pred) {
-                        const p1Str = pred.g1;
-                        const p2Str = pred.g2;
-                        const pQual = pred.qual;
-
+                        const p1Str = pred.g1, p2Str = pred.g2, pQual = pred.qual;
                         if (p1Str !== '' && p2Str !== '' && p1Str !== undefined && p2Str !== undefined && pQual) {
-                            const pi1 = parseInt(p1Str)||0;
-                            const pi2 = parseInt(p2Str)||0;
-                            
+                            const pi1 = parseInt(p1Str)||0, pi2 = parseInt(p2Str)||0;
                             let pts = 0;
                             if (pQual === rQual) pts += 3;
-
-                            const predWinnerGoals = Math.max(pi1, pi2);
-                            const predLoserGoals = Math.min(pi1, pi2);
-
-                            if (predWinnerGoals === realWinnerGoals) pts += 2;
-                            if (predLoserGoals === realLoserGoals) pts += 2;
-
+                            if (Math.max(pi1, pi2) === realWinnerGoals) pts += 2;
+                            if (Math.min(pi1, pi2) === realLoserGoals) pts += 2;
                             totalScores[p] += pts;
-                            if(document.getElementById(`pts-${p}-m${id}`)) {
-                                document.getElementById(`pts-${p}-m${id}`).innerText = pts + " ن";
-                            }
+                            if(document.getElementById(`pts-${p}-m${id}`)) { document.getElementById(`pts-${p}-m${id}`).innerText = pts + " ن"; }
                         }
                     }
                 });
             }
         }
-
         if(document.getElementById('score-hosam')) document.getElementById('score-hosam').innerText = totalScores.hosam;
         if(document.getElementById('score-rakan')) document.getElementById('score-rakan').innerText = totalScores.rakan;
         if(document.getElementById('score-aziz')) document.getElementById('score-aziz').innerText = totalScores.aziz;
@@ -550,17 +493,13 @@
         participants.forEach(p => {
             const card = document.getElementById(`card-${p}`);
             if (card) {
-                if (totalScores[p] === maxScore && maxScore > 0) {
-                    card.classList.add('leader-card');
-                } else {
-                    card.classList.remove('leader-card');
-                }
+                if (totalScores[p] === maxScore && maxScore > 0) card.classList.add('leader-card');
+                else card.classList.remove('leader-card');
             }
         });
     }
 
     loadCloudData();
 </script>
-
 </body>
 </html>
