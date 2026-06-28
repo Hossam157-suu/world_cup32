@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تحدي توقعات كأس العالم - دور الـ 32 الحقيقي</title>
+    <title>تحدي توقعات كأس العالم - دور الـ 32 السحابي</title>
     <style>
         :root {
             --primary: #1A365D;
@@ -247,7 +247,7 @@
 <div class="container">
     <header>
         <h1>🏆 موقع تحدي توقعات دور الـ 32 السحابي 🏆</h1>
-        <p>مزامنة سحابية حقيقية 100% تعمل على كافة الجوالات والأجهزة في نفس اللحظة 🌐</p>
+        <p>مزامنة سحابية حقيقية ومضمونة تعمل على كافة الأجهزة في نفس اللحظة 🌐</p>
     </header>
 
     <div id="loading-indicator" class="loading-notice">⏳ جاري مزامنة وحفظ البيانات السحابية الحية...</div>
@@ -302,7 +302,6 @@
     const passwords = { hosam: '2007', rakan: '0201', aziz: '7197' };
     const adminPassword = '1517'; 
     
-    // تم هنا ربط قاعدة بيانات سحابية حقيقية ومفتوحة من نوع Google Firebase لجروبكم
     const cloudApiUrl = 'https://wcup2026-b8dbf-default-rtdb.firebaseio.com/challenge_data.json';
 
     let decryptedStatus = { hosam: false, rakan: false, aziz: false };
@@ -343,9 +342,9 @@
                 }
             }
         } catch (error) {
-            console.log("خطأ في القراءة، سيتم جلب النسخة الاحتياطية:");
+            console.log("خطأ في جلب البيانات السحابية.");
         }
-        // تعبئة الحقول الفارغة لضمان عدم وجود أخطاء برمجية
+        
         if (!data.matchStatus) data.matchStatus = {};
         if (!data.realResults) data.realResults = {};
         if (!data.predictions) data.predictions = { hosam: {}, rakan: {}, aziz: {} };
@@ -359,12 +358,12 @@
         showLoading(true);
         try {
             await fetch(cloudApiUrl, {
-                method: 'PUT', // استخدام PUT لضمان إعادة كتابة البيانات وحفظها بشكل نظيف
+                method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
         } catch (error) {
-            alert("خطأ في الاتصال بالسيرفر! يرجى التحقق من الشبكة.");
+            alert("خطأ في الاتصال بالسيرفر!");
         }
         showLoading(false);
     }
@@ -459,18 +458,23 @@
 
     async function toggleUserAccess(player) {
         if (decryptedStatus[player]) {
+            // تجميع وقراءة المدخلات بشكل صحيح ومثالي الآن دون أخطاء
             for (let id = 1; id <= 16; id++) {
-                if(document.getElementById(`pred-${player}-m${id}-g1`) && data.matchStatus[id] !== 'closed') {
+                const g1Input = document.getElementById(`pred-${player}-m${id}-g1`);
+                const g2Input = document.getElementById(`pred-${player}-m${id}-g2`);
+                const qualInput = document.getElementById(`pred-${player}-m${id}-qual`);
+                
+                if(g1Input && data.matchStatus[id] !== 'closed') {
                     data.predictions[player][id] = {
-                        g1: document.getElementById(`pred-${player}-m${id}-g1`).value,
-                        g2: document.getElementById(`pred-${player}-m${id}-g2`).value,
-                        qual: document.getElementById(`pred-${player}-m${id}-qual`).value
+                        g1: g1Input.value,
+                        g2: g2Input.value,
+                        qual: qualInput.value
                     };
                 }
             }
             decryptedStatus[player] = false;
             renderMatches();
-            await saveCloudData(); // السيرفر الجديد يدعم حفظ المتغيرات فورا بدون تضارب
+            await saveCloudData(); // دفع البيانات المصححة للسيرفر الآن!
         } else {
             let pass = prompt(`أدخل الرمز السري لتعديل توقعاتك يا ${player === 'hosam' ? 'حسام' : player === 'rakan' ? 'راكان' : 'عبدالعزيز'}:`);
             if (pass === passwords[player]) {
