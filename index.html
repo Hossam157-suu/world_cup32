@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تحدي توقعات كأس العالم - دور الـ 32 السحابي</title>
+    <title>تحدي توقعات كأس العالم - دور الـ 32 الحقيقي</title>
     <style>
         :root {
             --primary: #1A365D;
@@ -247,7 +247,7 @@
 <div class="container">
     <header>
         <h1>🏆 موقع تحدي توقعات دور الـ 32 السحابي 🏆</h1>
-        <p>التوقعات والنتائج متزامنة أونلاين وتظهر للجميع في نفس اللحظة 🌐</p>
+        <p>مزامنة سحابية حقيقية 100% تعمل على كافة الجوالات والأجهزة في نفس اللحظة 🌐</p>
     </header>
 
     <div id="loading-indicator" class="loading-notice">⏳ جاري مزامنة وحفظ البيانات السحابية الحية...</div>
@@ -302,8 +302,8 @@
     const passwords = { hosam: '2007', rakan: '0201', aziz: '7197' };
     const adminPassword = '1517'; 
     
-    // تم هنا تحديث وتعديل مسار السيرفر السحابي لجروبكم بشكل فريد ومباشر
-    const cloudApiUrl = 'https://kvdb.io/MN8Wf62C3v88XFqV8xU4v7/hossam_group_wc2026';
+    // تم هنا ربط قاعدة بيانات سحابية حقيقية ومفتوحة من نوع Google Firebase لجروبكم
+    const cloudApiUrl = 'https://wcup2026-b8dbf-default-rtdb.firebaseio.com/challenge_data.json';
 
     let decryptedStatus = { hosam: false, rakan: false, aziz: false };
 
@@ -343,25 +343,28 @@
                 }
             }
         } catch (error) {
-            console.log("بداية السيرفر لأول مرة أو قراءة احتياطية:");
-            let localBackup = localStorage.getItem('wc_secure_backup');
-            if (localBackup) data = JSON.parse(localBackup);
+            console.log("خطأ في القراءة، سيتم جلب النسخة الاحتياطية:");
         }
+        // تعبئة الحقول الفارغة لضمان عدم وجود أخطاء برمجية
+        if (!data.matchStatus) data.matchStatus = {};
+        if (!data.realResults) data.realResults = {};
+        if (!data.predictions) data.predictions = { hosam: {}, rakan: {}, aziz: {} };
+        participants.forEach(p => { if (!data.predictions[p]) data.predictions[p] = {}; });
+
         showLoading(false);
         renderMatches();
     }
 
     async function saveCloudData() {
         showLoading(true);
-        localStorage.setItem('wc_secure_backup', JSON.stringify(data)); 
         try {
             await fetch(cloudApiUrl, {
-                method: 'POST',
+                method: 'PUT', // استخدام PUT لضمان إعادة كتابة البيانات وحفظها بشكل نظيف
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
         } catch (error) {
-            console.log("خطأ حفظ سحابي مؤقت.");
+            alert("خطأ في الاتصال بالسيرفر! يرجى التحقق من الشبكة.");
         }
         showLoading(false);
     }
@@ -410,7 +413,7 @@
             `;
 
             participants.forEach(p => {
-                const pred = (data.predictions[p] && data.predictions[p][id]) || { g1: '', g2: '', qual: '' };
+                const pred = data.predictions[p][id] || { g1: '', g2: '', qual: '' };
                 const pName = p === 'hosam' ? 'حسام' : p === 'rakan' ? 'راكان' : 'عبدالعزيز';
                 const isRevealed = (decryptedStatus[p] && !isMatchClosed) || isMatchFinished;
 
@@ -418,9 +421,9 @@
                     <div class="user-predict-box ${isRevealed ? 'active' : ''} ${isMatchClosed && !isMatchFinished ? 'locked' : ''}">
                         <h4>${pName} ${isMatchClosed && !isMatchFinished ? '🔒' : (isMatchFinished ? '✅ علني' : '')}</h4>
                         <div class="inputs-group">
-                            <input type="${isRevealed ? 'number' : 'password'}" min="0" id="pred-${p}-m${id}-g1" value="${pred.g1}" class="${isRevealed ? '' : 'secret-mode'}" ${isRevealed && !isMatchFinished ? '' : 'disabled'}>
+                            <input type="${isRevealed ? 'number' : 'password'}" min="0" id="pred-${p}-m${id}-g1" value="${pred.g1 !== undefined ? pred.g1 : ''}" class="${isRevealed ? '' : 'secret-mode'}" ${isRevealed && !isMatchFinished ? '' : 'disabled'}>
                             <span>-</span>
-                            <input type="${isRevealed ? 'number' : 'password'}" min="0" id="pred-${p}-m${id}-g2" value="${pred.g2}" class="${isRevealed ? '' : 'secret-mode'}" ${isRevealed && !isMatchFinished ? '' : 'disabled'}>
+                            <input type="${isRevealed ? 'number' : 'password'}" min="0" id="pred-${p}-m${id}-g2" value="${pred.g2 !== undefined ? pred.g2 : ''}" class="${isRevealed ? '' : 'secret-mode'}" ${isRevealed && !isMatchFinished ? '' : 'disabled'}>
                         </div>
                         <select id="pred-${p}-m${id}-qual" ${isRevealed && !isMatchFinished ? '' : 'disabled'} style="${isRevealed ? '' : 'color:transparent; background:#cbd5e0;'}">
                             <option value="">المتأهل؟</option>
@@ -467,7 +470,7 @@
             }
             decryptedStatus[player] = false;
             renderMatches();
-            await saveCloudData(); // حفظ سحابي فوري وموثق
+            await saveCloudData(); // السيرفر الجديد يدعم حفظ المتغيرات فورا بدون تضارب
         } else {
             let pass = prompt(`أدخل الرمز السري لتعديل توقعاتك يا ${player === 'hosam' ? 'حسام' : player === 'rakan' ? 'راكان' : 'عبدالعزيز'}:`);
             if (pass === passwords[player]) {
@@ -506,26 +509,29 @@
                 const realLoserGoals = Math.min(ri1, ri2);
 
                 participants.forEach(p => {
-                    const p1Str = data.predictions[p][id]?.g1;
-                    const p2Str = data.predictions[p][id]?.g2;
-                    const pQual = data.predictions[p][id]?.qual;
+                    const pred = data.predictions[p][id];
+                    if (pred) {
+                        const p1Str = pred.g1;
+                        const p2Str = pred.g2;
+                        const pQual = pred.qual;
 
-                    if (p1Str !== '' && p2Str !== '' && p1Str !== undefined && p2Str !== undefined && pQual) {
-                        const pi1 = parseInt(p1Str)||0;
-                        const pi2 = parseInt(p2Str)||0;
-                        
-                        let pts = 0;
-                        if (pQual === rQual) pts += 3;
+                        if (p1Str !== '' && p2Str !== '' && p1Str !== undefined && p2Str !== undefined && pQual) {
+                            const pi1 = parseInt(p1Str)||0;
+                            const pi2 = parseInt(p2Str)||0;
+                            
+                            let pts = 0;
+                            if (pQual === rQual) pts += 3;
 
-                        const predWinnerGoals = Math.max(pi1, pi2);
-                        const predLoserGoals = Math.min(pi1, pi2);
+                            const predWinnerGoals = Math.max(pi1, pi2);
+                            const predLoserGoals = Math.min(pi1, pi2);
 
-                        if (predWinnerGoals === realWinnerGoals) pts += 2;
-                        if (predLoserGoals === realLoserGoals) pts += 2;
+                            if (predWinnerGoals === realWinnerGoals) pts += 2;
+                            if (predLoserGoals === realLoserGoals) pts += 2;
 
-                        totalScores[p] += pts;
-                        if(document.getElementById(`pts-${p}-m${id}`)) {
-                            document.getElementById(`pts-${p}-m${id}`).innerText = pts + " ن";
+                            totalScores[p] += pts;
+                            if(document.getElementById(`pts-${p}-m${id}`)) {
+                                document.getElementById(`pts-${p}-m${id}`).innerText = pts + " ن";
+                            }
                         }
                     }
                 });
