@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحدي توقعات كأس العالم - دور الـ 32 السحابي</title>
+    <style>
+        :root {
+            --primary: #1A365D;
+            --secondary: #2B6CB0;
+            --accent: #EBF8FF;
+            --success: #28a745;
+            --danger: #dc3545;
+            --text: #2d3748;
+            --gray-bg: #e2e8f0;
+            --gold: #ffd700;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f7fafc;
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+        }
+        .container { max-width: 1150px; margin: 0 auto; }
+        header {
+            text-align: center;
+            background: var(--primary);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+        .rules-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .rules-table th, .rules-table td {
+            padding: 12px 15px;
+            text-align: right;
+            border-bottom: 1px solid #edf2f7;
+        }
+        .rules-table th {
+            background-color: var(--secondary);
+            color: white;
+            font-weight: bold;
+        }
+        .rules-table tr:last-child td { border-bottom: none; }
+        .points-badge-rule {
+            background: var(--accent);
+            color: var(--secondary);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        .leaderboard {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .card.leader-card {
+            border: 2px solid var(--gold);
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
+            background: linear-gradient(to bottom, #ffffff, #fffdf0);
+        }
+        .crown {
+            font-size: 2rem;
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            animation: bounce 2s infinite;
+        }
+        .card.leader-card .crown { display: block; }
+        
+        @keyframes bounce {
+            0%, 100% { top: -25px; }
+            50% { top: -32px; }
+        }
+
+        .card h3 { margin: 10px 0 10px 0; color: var(--secondary); }
+        .card .points { font-size: 2rem; font-weight: bold; color: var(--primary); }
+
+        .match-row {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #e2e8f0;
+        }
+        .match-header {
+            font-weight: bold;
+            color: var(--primary);
+            border-bottom: 1px solid #edf2f7;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+            font-size: 1.05rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .status-btn {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+        }
+        .status-open { background-color: #e6fffa; color: var(--success); border: 1px solid var(--success); }
+        .status-closed { background-color: #fff5f5; color: var(--danger); border: 1px solid var(--danger); }
+
+        .match-body {
+            display: grid;
+            grid-template-columns: 1.5fr 2fr;
+            gap: 15px;
+            align-items: center;
+        }
+        .real-result-section {
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px dashed var(--secondary);
+            text-align: center;
+        }
+        .btn-confirm-result {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 8px;
+            width: 100%;
+            font-weight: bold;
+        }
+        .btn-confirm-result:hover { background: var(--secondary); }
+        
+        .predictions-section {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        .user-predict-box {
+            background: var(--gray-bg);
+            border: 1px solid #cbd5e0;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .user-predict-box.active {
+            background: #fff;
+            border-color: var(--secondary);
+            box-shadow: 0 0 8px rgba(43, 108, 176, 0.2);
+        }
+        .user-predict-box.locked {
+            background: #edf2f7;
+            border-color: #a0aec0;
+            opacity: 0.85;
+        }
+        .user-predict-box h4 { margin: 0 0 8px 0; font-size: 0.95rem; }
+        .inputs-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+        }
+        input[type="number"], input[type="password"] {
+            width: 45px;
+            text-align: center;
+            padding: 6px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        input.secret-mode {
+            background-color: #cbd5e0;
+            color: #cbd5e0;
+            border: 1px solid #a0aec0;
+        }
+        select {
+            padding: 5px;
+            border-radius: 4px;
+            border: 1px solid #cbd5e0;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            width: 100%;
+        }
+        .btn-toggle {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 5px;
+            width: 100%;
+        }
+        .btn-toggle:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+        }
+        .pts-badge {
+            margin-top: 8px;
+            display: inline-block;
+            font-size: 0.85rem;
+            background: #edf2f7;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-weight: bold;
+        }
+        .loading-notice {
+            background: #fff3cd;
+            color: #856404;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>🏆 موقع تحدي توقعات دور الـ 32 السحابي 🏆</h1>
+        <p>التوقعات والنتائج متزامنة أونلاين وتظهر للجميع في نفس اللحظة 🌐</p>
+    </header>
+
+    <div id="loading-indicator" class="loading-notice">⏳ جاري مزامنة وحفظ البيانات السحابية الحية...</div>
+
+    <table class="rules-table">
+        <thead>
+            <tr>
+                <th>🎯 الحالة وتفاصيل التوقع الصحيح</th>
+                <th style="width: 150px; text-align: center;">📊 النقاط المستحقة</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>توقع المنتخب المتأهل الصحيح للدور القادم</td>
+                <td style="text-align: center;"><span class="points-badge-rule">+ 3 نقاط</span></td>
+            </tr>
+            <tr>
+                <td>توقع عدد الأهداف الصحيح للمنتخب (المتأهل)</td>
+                <td style="text-align: center;"><span class="points-badge-rule">+ نقطتين</span></td>
+            </tr>
+            <tr>
+                <td>توقع عدد الأهداف الصحيح للمنتخب (الخاسر)</td>
+                <td style="text-align: center;"><span class="points-badge-rule">+ نقطتين</span></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="leaderboard">
+        <div class="card" id="card-hosam">
+            <div class="crown">👑</div>
+            <h3>حسام</h3>
+            <div class="points" id="score-hosam">0</div>
+        </div>
+        <div class="card" id="card-rakan">
+            <div class="crown">👑</div>
+            <h3>راكان</h3>
+            <div class="points" id="score-rakan">0</div>
+        </div>
+        <div class="card" id="card-aziz">
+            <div class="crown">👑</div>
+            <h3>عبدالعزيز</h3>
+            <div class="points" id="score-aziz">0</div>
+        </div>
+    </div>
+
+    <h2>⚽ مباريات دور الـ 32 والنتائج والتوقعات السرية أونلاين</h2>
+    <div id="matches-container"></div>
+</div>
+
+<script>
+    const participants = ['hosam', 'rakan', 'aziz'];
+    const passwords = { hosam: '2007', rakan: '0201', aziz: '7197' };
+    const adminPassword = '1517'; 
+    
+    // تم هنا تحديث وتعديل مسار السيرفر السحابي لجروبكم بشكل فريد ومباشر
+    const cloudApiUrl = 'https://kvdb.io/MN8Wf62C3v88XFqV8xU4v7/hossam_group_wc2026';
+
+    let decryptedStatus = { hosam: false, rakan: false, aziz: false };
+
+    const staticTeams = {
+        1: { t1: "جنوب أفريقيا", t2: "كندا" },
+        2: { t1: "البرازيل", t2: "اليابان" },
+        3: { t1: "ألمانيا", t2: "باراغواي" },
+        4: { t1: "هولندا", t2: "المغرب" },
+        5: { t1: "ساحل العاج", t2: "النرويج" },
+        6: { t1: "فرنسا", t2: "السويد" },
+        7: { t1: "المكسيك", t2: "الأوروغواي" },
+        8: { t1: "إنجلترا", t2: "الكونغو الديمقراطية" },
+        9: { t1: "بلجيكا", t2: "السنغال" },
+        10: { t1: "أمريكا", t2: "البوسنة والهرسك" },
+        11: { t1: "إسبانيا", t2: "النمسا" },
+        12: { t1: "البرتغال", t2: "كرواتيا" },
+        13: { t1: "سويسرا", t2: "الجزائر" },
+        14: { t1: "أستراليا", t2: "مصر" },
+        15: { t1: "الأرجنتين", t2: "الرأس الأخضر" },
+        16: { t1: "كولومبيا", t2: "غانا" }
+    };
+
+    let data = {
+        matchStatus: {}, 
+        realResults: {},
+        predictions: { hosam: {}, rakan: {}, aziz: {} }
+    };
+
+    async function loadCloudData() {
+        showLoading(true);
+        try {
+            const response = await fetch(cloudApiUrl);
+            if (response.ok) {
+                const cloudData = await response.json();
+                if (cloudData && cloudData.predictions) {
+                    data = cloudData;
+                }
+            }
+        } catch (error) {
+            console.log("بداية السيرفر لأول مرة أو قراءة احتياطية:");
+            let localBackup = localStorage.getItem('wc_secure_backup');
+            if (localBackup) data = JSON.parse(localBackup);
+        }
+        showLoading(false);
+        renderMatches();
+    }
+
+    async function saveCloudData() {
+        showLoading(true);
+        localStorage.setItem('wc_secure_backup', JSON.stringify(data)); 
+        try {
+            await fetch(cloudApiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+        } catch (error) {
+            console.log("خطأ حفظ سحابي مؤقت.");
+        }
+        showLoading(false);
+    }
+
+    function showLoading(status) {
+        const indicator = document.getElementById('loading-indicator');
+        if (indicator) indicator.style.display = status ? 'block' : 'none';
+    }
+
+    function renderMatches() {
+        const container = document.getElementById('matches-container');
+        if (!container) return;
+        container.innerHTML = '';
+
+        for (let id = 1; id <= 16; id++) {
+            const currentTeams = staticTeams[id];
+            const rResult = data.realResults[id] || { g1: '', g2: '', qual: '' };
+            const isMatchClosed = data.matchStatus[id] === 'closed';
+            const isMatchFinished = rResult.g1 !== '' && rResult.g2 !== '' && rResult.qual !== '';
+
+            let matchHTML = `
+                <div class="match-row">
+                    <div class="match-header">
+                        <span>🏟️ المباراة ${id}: ${currentTeams.t1} × ${currentTeams.t2}</span>
+                        <button class="status-btn ${isMatchClosed ? 'status-closed' : 'status-open'}" onclick="toggleMatchLock(${id})">
+                            ${isMatchClosed ? '🔒 مغلقة (اضغط للفتح)' : '🔓 متاحة (اضغط للقفل)'}
+                        </button>
+                    </div>
+                    <div class="match-body">
+                        <div class="real-result-section">
+                            <span style="font-size:0.82rem; font-weight:bold; color:var(--primary);">النتيجة الفعلية:</span>
+                            <div class="inputs-group" style="margin-top:5px;">
+                                <input type="number" min="0" id="real-m${id}-g1" value="${rResult.g1}" placeholder="أه">
+                                <span>×</span>
+                                <input type="number" min="0" id="real-m${id}-g2" value="${rResult.g2}" placeholder="أه">
+                            </div>
+                            <select id="real-m${id}-qual">
+                                <option value="">-- من تأهل؟ --</option>
+                                <option value="1" ${rResult.qual == '1' ? 'selected' : ''}>تأهل [${currentTeams.t1}]</option>
+                                <option value="2" ${rResult.qual == '2' ? 'selected' : ''}>تأهل [${currentTeams.t2}]</option>
+                            </select>
+                            <button class="btn-confirm-result" onclick="confirmAndCalculateSingle(${id})">✔️ تأكيد النتيجة والاحتساب فورا</button>
+                        </div>
+                        
+                        <div class="predictions-section">
+            `;
+
+            participants.forEach(p => {
+                const pred = (data.predictions[p] && data.predictions[p][id]) || { g1: '', g2: '', qual: '' };
+                const pName = p === 'hosam' ? 'حسام' : p === 'rakan' ? 'راكان' : 'عبدالعزيز';
+                const isRevealed = (decryptedStatus[p] && !isMatchClosed) || isMatchFinished;
+
+                matchHTML += `
+                    <div class="user-predict-box ${isRevealed ? 'active' : ''} ${isMatchClosed && !isMatchFinished ? 'locked' : ''}">
+                        <h4>${pName} ${isMatchClosed && !isMatchFinished ? '🔒' : (isMatchFinished ? '✅ علني' : '')}</h4>
+                        <div class="inputs-group">
+                            <input type="${isRevealed ? 'number' : 'password'}" min="0" id="pred-${p}-m${id}-g1" value="${pred.g1}" class="${isRevealed ? '' : 'secret-mode'}" ${isRevealed && !isMatchFinished ? '' : 'disabled'}>
+                            <span>-</span>
+                            <input type="${isRevealed ? 'number' : 'password'}" min="0" id="pred-${p}-m${id}-g2" value="${pred.g2}" class="${isRevealed ? '' : 'secret-mode'}" ${isRevealed && !isMatchFinished ? '' : 'disabled'}>
+                        </div>
+                        <select id="pred-${p}-m${id}-qual" ${isRevealed && !isMatchFinished ? '' : 'disabled'} style="${isRevealed ? '' : 'color:transparent; background:#cbd5e0;'}">
+                            <option value="">المتأهل؟</option>
+                            <option value="1" ${pred.qual == '1' ? 'selected' : ''}>${currentTeams.t1}</option>
+                            <option value="2" ${pred.qual == '2' ? 'selected' : ''}>${currentTeams.t2}</option>
+                        </select>
+                        <div>
+                            <button class="btn-toggle" onclick="toggleUserAccess('${p}')" ${isMatchClosed || isMatchFinished ? 'disabled' : ''}>
+                                ${isMatchFinished ? '📊 مباراة منتهية' : (isMatchClosed ? '🔒 مغلق' : (isRevealed ? '🔒 قفل وتأكيد' : `👁️ كشف/تعديل ${pName}`))}
+                            </button>
+                        </div>
+                        <div class="pts-badge" id="pts-${p}-m${id}">0 ن</div>
+                    </div>
+                `;
+            });
+
+            matchHTML += `</div></div></div>`;
+            container.innerHTML += matchHTML;
+        }
+        calculateLiveScores();
+    }
+
+    async function toggleMatchLock(id) {
+        let pass = prompt("أدخل الرقم السري الخاص بالأدمن لتغيير حالة قفل التوقعات:");
+        if (pass === adminPassword) {
+            data.matchStatus[id] = data.matchStatus[id] === 'closed' ? 'open' : 'closed';
+            renderMatches();
+            await saveCloudData();
+        } else {
+            alert("الرمز السري للأدمن خطأ!");
+        }
+    }
+
+    async function toggleUserAccess(player) {
+        if (decryptedStatus[player]) {
+            for (let id = 1; id <= 16; id++) {
+                if(document.getElementById(`pred-${player}-m${id}-g1`) && data.matchStatus[id] !== 'closed') {
+                    data.predictions[player][id] = {
+                        g1: document.getElementById(`pred-${player}-m${id}-g1`).value,
+                        g2: document.getElementById(`pred-${player}-m${id}-g2`).value,
+                        qual: document.getElementById(`pred-${player}-m${id}-qual`).value
+                    };
+                }
+            }
+            decryptedStatus[player] = false;
+            renderMatches();
+            await saveCloudData(); // حفظ سحابي فوري وموثق
+        } else {
+            let pass = prompt(`أدخل الرمز السري لتعديل توقعاتك يا ${player === 'hosam' ? 'حسام' : player === 'rakan' ? 'راكان' : 'عبدالعزيز'}:`);
+            if (pass === passwords[player]) {
+                decryptedStatus[player] = true;
+                renderMatches();
+            } else {
+                alert('الرمز السري خاطئ!');
+            }
+        }
+    }
+
+    async function confirmAndCalculateSingle(id) {
+        data.realResults[id] = {
+            g1: document.getElementById(`real-m${id}-g1`).value,
+            g2: document.getElementById(`real-m${id}-g2`).value,
+            qual: document.getElementById(`real-m${id}-qual`).value
+        };
+        renderMatches();
+        await saveCloudData(); 
+        alert(`🎉 تم الاعتماد الفوري وحفظ النتيجة وحساب النقاط تلقائياً!`);
+    }
+
+    function calculateLiveScores() {
+        let totalScores = { hosam: 0, rakan: 0, aziz: 0 };
+
+        for (let id = 1; id <= 16; id++) {
+            const r1Str = data.realResults[id]?.g1;
+            const r2Str = data.realResults[id]?.g2;
+            const rQual = data.realResults[id]?.qual; 
+
+            if (r1Str !== '' && r2Str !== '' && r1Str !== undefined && r2Str !== undefined && rQual) {
+                const ri1 = parseInt(r1Str)||0;
+                const ri2 = parseInt(r2Str)||0;
+                
+                const realWinnerGoals = Math.max(ri1, ri2);
+                const realLoserGoals = Math.min(ri1, ri2);
+
+                participants.forEach(p => {
+                    const p1Str = data.predictions[p][id]?.g1;
+                    const p2Str = data.predictions[p][id]?.g2;
+                    const pQual = data.predictions[p][id]?.qual;
+
+                    if (p1Str !== '' && p2Str !== '' && p1Str !== undefined && p2Str !== undefined && pQual) {
+                        const pi1 = parseInt(p1Str)||0;
+                        const pi2 = parseInt(p2Str)||0;
+                        
+                        let pts = 0;
+                        if (pQual === rQual) pts += 3;
+
+                        const predWinnerGoals = Math.max(pi1, pi2);
+                        const predLoserGoals = Math.min(pi1, pi2);
+
+                        if (predWinnerGoals === realWinnerGoals) pts += 2;
+                        if (predLoserGoals === realLoserGoals) pts += 2;
+
+                        totalScores[p] += pts;
+                        if(document.getElementById(`pts-${p}-m${id}`)) {
+                            document.getElementById(`pts-${p}-m${id}`).innerText = pts + " ن";
+                        }
+                    }
+                });
+            }
+        }
+
+        if(document.getElementById('score-hosam')) document.getElementById('score-hosam').innerText = totalScores.hosam;
+        if(document.getElementById('score-rakan')) document.getElementById('score-rakan').innerText = totalScores.rakan;
+        if(document.getElementById('score-aziz')) document.getElementById('score-aziz').innerText = totalScores.aziz;
+
+        let maxScore = Math.max(totalScores.hosam, totalScores.rakan, totalScores.aziz);
+        participants.forEach(p => {
+            const card = document.getElementById(`card-${p}`);
+            if (card) {
+                if (totalScores[p] === maxScore && maxScore > 0) {
+                    card.classList.add('leader-card');
+                } else {
+                    card.classList.remove('leader-card');
+                }
+            }
+        });
+    }
+
+    loadCloudData();
+</script>
+
+</body>
+</html>
