@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تحدي توقعات كأس العالم - النسخة السحابية المضمونة</title>
+    <!-- مكتبة الرسوم البيانية -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary: #1A365D;
@@ -25,12 +27,56 @@
         .container { max-width: 1150px; margin: 0 auto; }
         header {
             text-align: center;
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
-            padding: 20px;
+            padding: 25px;
             border-radius: 12px;
             margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
+        header h1 { margin: 0 0 10px 0; font-size: 2rem; }
+        header p { margin: 0; font-size: 1rem; opacity: 0.9; }
+
+        /* تنسيقات قسم الإحصائيات الختامية */
+        .stats-section {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+            margin-bottom: 25px;
+        }
+        .stat-box {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+            border-right: 5px solid var(--primary);
+            text-align: center;
+        }
+        .stat-box.red { border-right-color: var(--danger); }
+        .stat-box.green { border-right-color: var(--success); }
+        .stat-box.gold { border-right-color: var(--gold); }
+        .stat-icon { font-size: 1.8rem; margin-bottom: 5px; }
+        .stat-title { font-size: 0.95rem; color: #718096; margin-bottom: 5px; font-weight: bold; }
+        .stat-winner { font-size: 1.3rem; color: var(--primary); font-weight: bold; }
+        .stat-desc { font-size: 0.8rem; color: #a0aec0; margin-top: 4px; }
+
+        .chart-box {
+            background: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* باقي تنسيقات الجدول والبطاقات والمباريات */
         .rules-table {
             width: 100%;
             border-collapse: collapse;
@@ -257,12 +303,52 @@
 
 <div class="container">
     <header>
-        <h1>🏆 موقع التحدي - المسار الآلي للبطولة 🏆</h1>
-        <p>مزامنة سحابية حية - شجرة المباريات تتحدث تلقائياً 🌐</p>
+        <h1>🏆 موقع التحدي - الحصاد الختامي والمسار الآلي 🏆</h1>
+        <p>مزامنة سحابية حية - تحليل الأداء التفاعلي وتحديث الشجرة آلياً 🌐</p>
     </header>
 
     <div id="loading-indicator" class="loading-notice">⏳ جاري تأمين ومزامنة البيانات مع السيرفر السحابي...</div>
 
+    <!-- 📊 قسم الإحصائيات الختامية المضاف في بداية الموقع -->
+    <div class="stats-section">
+        <h2 style="text-align: center; color: var(--primary); margin: 0;">📊 لوحة التحليل الختامي للتحدي</h2>
+        <div class="stats-grid">
+            <div class="stat-box gold">
+                <div class="stat-icon">👑</div>
+                <div class="stat-title">ملك التوقعات</div>
+                <div class="stat-winner" id="stat-correct-winner">...</div>
+                <div class="stat-desc">أكثر شخص توقع المنتخب المتأهل صح</div>
+            </div>
+
+            <div class="stat-box green">
+                <div class="stat-icon">🎯</div>
+                <div class="stat-title">القناص</div>
+                <div class="stat-winner" id="stat-exact-diff">...</div>
+                <div class="stat-desc">أكثر شخص توقع فارق الأهداف بدقة</div>
+            </div>
+
+            <div class="stat-box">
+                <div class="stat-icon">🔮</div>
+                <div class="stat-title">العراف</div>
+                <div class="stat-winner" id="stat-exact-score">...</div>
+                <div class="stat-desc">أكثر شخص توقع النتيجة والمتأهل بالملي</div>
+            </div>
+
+            <div class="stat-box red">
+                <div class="stat-icon">❌</div>
+                <div class="stat-title">جاب العيد</div>
+                <div class="stat-winner" id="stat-wrong-winner">...</div>
+                <div class="stat-desc">أكثر شخص أخطأ في توقع المتأهلين</div>
+            </div>
+        </div>
+
+        <div class="chart-box">
+            <h3 style="text-align: center; color: var(--secondary); margin-top: 0;">📈 رسم بياني لمطاردة النقاط وتغير الترتيب عبر المباريات</h3>
+            <canvas id="pointsChart" height="90"></canvas>
+        </div>
+    </div>
+
+    <!-- جدول القوانين -->
     <table class="rules-table">
         <thead>
             <tr>
@@ -290,6 +376,7 @@
         </tbody>
     </table>
 
+    <!-- لوحة الترتيب -->
     <div class="leaderboard">
         <div class="card" id="card-hosam"><div class="crown">👑</div><h3>حسام</h3><div class="points" id="score-hosam">0</div></div>
         <div class="card" id="card-rakan"><div class="crown">👑</div><h3>راكان</h3><div class="points" id="score-rakan">0</div></div>
@@ -304,6 +391,7 @@
     const participants = ['hosam', 'rakan', 'aziz'];
     const passwords = { hosam: '2007', rakan: '0201', aziz: '7197' };
     const adminPassword = '1517'; 
+    const nameMap = { hosam: 'حسام', rakan: 'راكان', aziz: 'عبدالعزيز' };
     
     // ربط مباشر وحقيقي ببيانات سيرفر jsonbin الخاص بالجروب الأول
     const YOUR_BIN_ID = '6a4186a4f5f4af5e293e88ef'; 
@@ -312,7 +400,10 @@
 
     let decryptedStatus = { hosam: false, rakan: false, aziz: false };
 
-    // مباريات دور الـ 32 (مع تصحيح المكسيك والإكوادور وتعديل الأرجنتين إلى امسارق)
+    // متغير الرسم البياني
+    let myChart = null;
+
+    // مباريات دور الـ 32
     const staticTeams = {
         1: { t1: "جنوب أفريقيا", t2: "كندا" }, 2: { t1: "البرازيل", t2: "اليابان" },
         3: { t1: "ألمانيا", t2: "باراغواي" }, 4: { t1: "هولندا", t2: "المغرب" },
@@ -372,7 +463,6 @@
 
     function showLoading(status) { document.getElementById('loading-indicator').style.display = status ? 'block' : 'none'; }
 
-    // دالة استخراج الفريق المتأهل برمجياً
     function getAdvancingTeam(matchId, getLoser = false, currentDynamicTeams) {
         if (!matchId) return "غير محدد";
         const r = data.realResults[matchId];
@@ -559,6 +649,15 @@
 
     function calculateLiveScores() {
         let totalScores = { hosam: 0, rakan: 0, aziz: 0 };
+        
+        // كائنات لتوليد الإحصائيات ورسم المخطط
+        let pStats = {
+            hosam: { history: [0], correctWinner: 0, wrongWinner: 0, exactDiff: 0, exactScore: 0 },
+            rakan: { history: [0], correctWinner: 0, wrongWinner: 0, exactDiff: 0, exactScore: 0 },
+            aziz: { history: [0], correctWinner: 0, wrongWinner: 0, exactDiff: 0, exactScore: 0 }
+        };
+        let matchLabels = ['البداية'];
+
         for (let id = 1; id <= 32; id++) {
             const rResult = data.realResults && data.realResults[id] ? data.realResults[id] : { g1: '', g2: '', qual: '' };
             const r1Str = rResult.g1;
@@ -579,20 +678,44 @@
                             const pi1 = parseInt(p1Str)||0, pi2 = parseInt(p2Str)||0;
                             let pts = 0;
                             
-                            if (pQual === rQual) pts += 3;
+                            // 1. المتأهل
+                            if (pQual === rQual) {
+                                pts += 3;
+                                pStats[p].correctWinner++;
+                            } else if (pQual !== "") {
+                                pStats[p].wrongWinner++;
+                            }
+
+                            // 2 & 3. أهداف الفائز والخاسر
                             if (Math.max(pi1, pi2) === realWinnerGoals) pts += 1;
                             if (Math.min(pi1, pi2) === realLoserGoals) pts += 1;
                             
+                            // 4. فارق الأهداف
                             const predDiff = Math.abs(pi1 - pi2);
-                            if (predDiff === realDiff) pts += 1;
+                            if (predDiff === realDiff) {
+                                pts += 1;
+                                pStats[p].exactDiff++;
+                            }
+
+                            // العراف (النتيجة والمتأهل بالملي)
+                            if (pi1 === ri1 && pi2 === ri2 && pQual === rQual) {
+                                pStats[p].exactScore++;
+                            }
 
                             totalScores[p] += pts;
                             if(document.getElementById(`pts-${p}-m${id}`)) { document.getElementById(`pts-${p}-m${id}`).innerText = pts + " ن"; }
                         }
                     }
+                    pStats[p].history.push(totalScores[p]);
                 });
+                matchLabels.push(`م ${id}`);
+            } else {
+                participants.forEach(p => pStats[p].history.push(totalScores[p]));
+                matchLabels.push(`م ${id}`);
             }
         }
+
+        // تحديث النقاط في الكروت
         if(document.getElementById('score-hosam')) document.getElementById('score-hosam').innerText = totalScores.hosam;
         if(document.getElementById('score-rakan')) document.getElementById('score-rakan').innerText = totalScores.rakan;
         if(document.getElementById('score-aziz')) document.getElementById('score-aziz').innerText = totalScores.aziz;
@@ -605,6 +728,61 @@
                 else card.classList.remove('leader-card');
             }
         });
+
+        // تحديث لوحة الإحصائيات الختامية
+        updateDashboardStats(pStats, matchLabels);
+    }
+
+    // دالة تحديث الرسوم الإحصائية في أعلى الموقع
+    function updateDashboardStats(pStats, matchLabels) {
+        function getLeaders(metric, isMin = false) {
+            let bestVal = isMin ? 999 : -1;
+            participants.forEach(p => { 
+                if (isMin ? (pStats[p][metric] < bestVal) : (pStats[p][metric] > bestVal)) bestVal = pStats[p][metric]; 
+            });
+            let leaders = participants.filter(p => pStats[p][metric] === bestVal).map(p => nameMap[p]);
+            return { names: leaders.join(' و '), val: bestVal };
+        }
+
+        const mCorrect = getLeaders('correctWinner');
+        const mWrong = getLeaders('wrongWinner');
+        const mDiff = getLeaders('exactDiff');
+        const mScore = getLeaders('exactScore');
+
+        if(document.getElementById('stat-correct-winner')) {
+            document.getElementById('stat-correct-winner').innerHTML = `${mCorrect.names} <span style="font-size:0.9rem; color:#718096;">(${mCorrect.val} مرة)</span>`;
+            document.getElementById('stat-wrong-winner').innerHTML = `${mWrong.names} <span style="font-size:0.9rem; color:#718096;">(${mWrong.val} مرة)</span>`;
+            document.getElementById('stat-exact-diff').innerHTML = `${mDiff.names} <span style="font-size:0.9rem; color:#718096;">(${mDiff.val} مرة)</span>`;
+            document.getElementById('stat-exact-score').innerHTML = `${mScore.names} <span style="font-size:0.9rem; color:#718096;">(${mScore.val} مرة)</span>`;
+        }
+
+        // رسم المخطط البياني التفاعلي
+        const ctx = document.getElementById('pointsChart');
+        if (ctx) {
+            if (myChart) { myChart.destroy(); } // مسح الرسم السابق لتحديثه
+            myChart = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: matchLabels,
+                    datasets: [
+                        { label: 'حسام', data: pStats['hosam'].history, borderColor: '#1A365D', backgroundColor: '#1A365D', borderWidth: 3, tension: 0.3 },
+                        { label: 'راكان', data: pStats['rakan'].history, borderColor: '#ffd700', backgroundColor: '#ffd700', borderWidth: 3, tension: 0.3 },
+                        { label: 'عبدالعزيز', data: pStats['aziz'].history, borderColor: '#28a745', backgroundColor: '#28a745', borderWidth: 3, tension: 0.3 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { position: 'top', labels: { font: { family: 'Segoe UI', size: 13 } } }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'النقاط' } },
+                        x: { title: { display: true, text: 'المباراة' } }
+                    }
+                }
+            });
+        }
     }
 
     loadCloudData(true);
